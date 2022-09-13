@@ -21,6 +21,7 @@ x_data = np.linspace(0, 1, 101, endpoint=True)
 delta = np.random.normal(size=101)
 y_data = line(x_data, alpha, beta) + delta
 
+#dichotomic search function
 def dichotomic_search(func, domain, eps=epsilon, iter_count=0, func_count=0):
     iter_count += 1
     func_count += 1
@@ -43,6 +44,7 @@ def dichotomic_search(func, domain, eps=epsilon, iter_count=0, func_count=0):
             new_domain = (x1, domain[1])
         return dichotomic_search(func, new_domain, eps=eps, iter_count=iter_count, func_count=func_count)
 
+#exhaustive search function
 def exhaustive_search(x, y, func, a_domain=(0,1), b_domain=(0,1), eps=epsilon):
     D_min = inf
     iter_count = 0
@@ -60,6 +62,7 @@ def exhaustive_search(x, y, func, a_domain=(0,1), b_domain=(0,1), eps=epsilon):
                 b_opt = b
     return a_opt, b_opt, iter_count, func_count
 
+#gauss search function
 def gauss_search(x, y, func, a_domain=(0,1), b_domain=(0,1), a_init=0.5, b_init=0.5, eps=epsilon):
     a, b = a_init, b_init
     iter_count = 0
@@ -82,18 +85,24 @@ def gauss_search(x, y, func, a_domain=(0,1), b_domain=(0,1), a_init=0.5, b_init=
     return a, b, iter_count, func_count
 
 if __name__ == "__main__":
+    #Uncomment the line below for linear approximant
     #func = line
+
+    #Uncomment the line below for rational approximant
     func = rational
+
     x = x_data
     y = y_data
     plt.scatter(x, y, color="royalblue", label="noisy data", marker=".")
     plt.plot(x, func(x, alpha, beta), color="maroon", label="Initial line")
     print("Alpha: {}    Beta: {}".format(alpha, beta))
     
+    #exhaustive search result
     ex_search = exhaustive_search(x, y, func)
     plt.plot(x, func(x, *ex_search[:-2]), label="Exhaustive")
     print("Exhaustive search\nA: {}    B: {}    Iter: {}    Func: {}".format(*ex_search))
     
+    #Gauss method result
     ga_search = gauss_search(x, y, func)
     plt.plot(x, func(x, *ga_search[:-2]), label="Gauss")
     print("Gauss search\nA: {}    B: {}    Iter: {}    Func: {}".format(*ga_search))
@@ -101,6 +110,7 @@ if __name__ == "__main__":
     def d_ab(ab):
         return np.sum((func(x, ab[0], ab[1]) - y)**2)
     
+    #Nelder-Mead method result
     guess = [0.5, 0.5]
     nelder_mead_res = minimize(d_ab, guess, method="Nelder-Mead", tol=epsilon)
     plt.plot(x, func(x, *nelder_mead_res.x), label="Nelder-Mead")

@@ -5,14 +5,17 @@ gold = (3 - np.sqrt(5)) / 2
 inf = float("inf")
 task1_domains = [(0, 1), (0, 1), (0.1, 1)]
 
+#power function
 def task1_func1(x):
     """y = x^3"""
     return x**3
 
+#absolute function
 def task1_func2(x):
     """y = |x - 0.2|"""
     return np.absolute(x - 0.2)
 
+#trigonometric function
 def task1_func3(x):
     """y = x * sin(1/x)"""
     if x == 0:
@@ -22,6 +25,7 @@ def task1_func3(x):
 
 task1_functions = [task1_func1, task1_func2, task1_func3]
 
+#exhaustive search function
 def exhaustive_search(func, domain, eps=epsilon):
     iter_count = 0
     func_count = 0
@@ -38,6 +42,7 @@ def exhaustive_search(func, domain, eps=epsilon):
         func_count += 1
     return current_min_x, current_min_y, iter_count, func_count
 
+#dichotomic search function
 def dichotomic_search(func, domain, eps=epsilon, iter_count=0, func_count=0):
     iter_count += 1
     if domain[0] + epsilon > domain[1]:
@@ -59,6 +64,7 @@ def dichotomic_search(func, domain, eps=epsilon, iter_count=0, func_count=0):
             new_domain = (x1, domain[1])
         return dichotomic_search(func, new_domain, eps=eps, iter_count=iter_count, func_count=func_count)
 
+#golden search function
 def golden_search(func, domain, eps=epsilon, x1=None, x2=None, iter_count=0, func_count=0):
     iter_count += 1
     if domain[0] + epsilon > domain[1]:
@@ -88,12 +94,19 @@ def golden_search(func, domain, eps=epsilon, x1=None, x2=None, iter_count=0, fun
 if __name__ == "__main__":
     for i in range(3):
         print("    ", task1_functions[i].__doc__)
+
+        #exhaustive search result
         ans = exhaustive_search(task1_functions[i], task1_domains[i])
         print("Exhaustive search\nx: {:.4f}    y: {:.4f}    iter: {}    func: {}".format(*ans))
+
+        #dichotomic search result
         ans = dichotomic_search(task1_functions[i], task1_domains[i])
         print("Dichotomic search\nx: {:.4f}    y: {:.4f}    iter: {}    func: {}".format(*ans))
+
+        #golden search result
         ans = golden_search(task1_functions[i], task1_domains[i])
         print("Golden search\nx: {:.4f}    y: {:.4f}    iter: {}    func: {}".format(*ans))
+
         print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
 
 wait = input("waiting: ")
