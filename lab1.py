@@ -101,7 +101,6 @@ def generate_data(func, *args):
                 res = func(argument)[1]
                 five_runs.append(res)
             raw_times[n-1] = np.mean(five_runs)
-            print(n)
         return raw_times
     elif len(args) == 2:
         A, B = args[0], args[1]
@@ -112,7 +111,6 @@ def generate_data(func, *args):
                 res = func(arg1, arg2)[1]
                 five_runs.append(res)
             raw_times[n-1] = np.mean(five_runs)
-            print(n)
         return raw_times
 
 def o_const(x, a):
@@ -131,10 +129,24 @@ def o_cube(x, a, b, c, d):
     return a * x**3 + b * x**2 + c * x + d
 
 if __name__ == "__main__":
-    # change function to appropriate theoretical
+    # change function to appropriate theoretical; change to:
+        #o_const for constant approximation
+        #o_linear for linear approximation
+        #o_nlogn for logarithmic approximation
+        #o_square for quadratic approximation
+        #o_cube for cubic approximation
     func = o_const
 
-    # change data source to appropriate
+    # change data source to appropriate; change the first argument to
+        #const_func for constant function
+        #sum_func for the sum of elements
+        #prod_func for the product of elements
+        #poly_direct_func for direct polynomial calculation
+        #poly_horner_func for Horner’s method
+        #bubble_sort_func for bubble sort
+        #quick_sort_func for quick sort
+        #timsort_func for timsort
+        #mat_mul_func for matrix product
     ydata = generate_data(const_func, v)
     
     xdata = np.linspace(1, 2000, 2000, endpoint=True)
