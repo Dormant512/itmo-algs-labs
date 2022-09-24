@@ -98,7 +98,6 @@ while temp>temp_min:
             optimal_Length=new_Length
             optimal_Path=new_Paths
         else:
-             #metropolis principle
              p=math.exp(-(new_Length-optimal_Length)/temp)
              r=np.random.uniform(low=0,high=1)
              if r<p:
