@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 cities=pd.read_table('coords.txt',sep='\t',header=None)
 cities.columns=['x']
 cities['y']=None
+np.random.seed(2) #Fix random parameters to reproduce results on different machines
 
 #distance calculation between coordinates
 def CalDistance(x, y):
