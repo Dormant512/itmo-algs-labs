@@ -10,7 +10,7 @@ def rational(x, a, b, c, d):
 
 def func_check(x):
     '''Function to generate y_data'''
-    return 1/(x*x - 3*x +2)
+    return 1/(x*x - 3*x + 2)
 
 
 def d_ab(ab):
@@ -23,12 +23,12 @@ inf = float("inf")
 
 np.random.seed(0) #Fix random parameters to reproduce results on different machines
 
-x_data = np.linspace(0, 1, 1001, endpoint=True)
+x_data = np.linspace(0, 3, 1001, endpoint=True)
 delta = np.random.normal(size=1001)
-y_data = np.linspace(0, 1, 1001, endpoint=True)
+y_data = np.linspace(0, 3, 1001, endpoint=True)
 
 for i in range(0,1001):
-    if func_check(x_data[i])<(-100):
+    if func_check(x_data[i]) < (-100):
         y_data[i] = -100 + delta[i]
     elif func_check(x_data[i]) >= (-100) and func_check(x_data[i]) <= 100:
         y_data[i] = func_check(x_data[i]) + delta[i]
