@@ -26,7 +26,7 @@ while i < vert_num:
     j = i + 1 #col index
     while j < vert_num:
         if edge_binary_flat[k] == 1:
-            ans = np.random.randint(max_weight)
+            ans = np.random.randint(max_weight) + 1
             G_adj_matrix[i][j] = ans
             G_adj_matrix[j][i] = ans
         k += 1
