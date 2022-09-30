@@ -47,7 +47,7 @@ if __name__ == "__main__":
         random_nodes = list(random.sample(list(G.nodes), 2))
     
         start_time = time.time()
-        short_p_nodes = nx.shortest_path(G, source=random_nodes[0], target=random_nodes[1])
+        short_p_nodes = nx.astar_path(G, source=random_nodes[0], target=random_nodes[1])
         time_taken = time.time() - start_time
         time_title = "{:.4f}".format(time_taken * 1000)
         
