@@ -42,9 +42,9 @@ def path_vert2edge(path):
 
 
 if __name__ == "__main__":
-    print(G_adj_matrix[0:3])
-
     src, trg = np.random.randint(vert_num), np.random.randint(vert_num) #random start and end nodes
+    other_verts = [i for i in list(G.nodes) if i != src]
+    assert len(other_verts) == vert_num - 1, f"Length of other vertices {len(other_verts)} (wrong)!"
 
     pos = nx.circular_layout(G)
     nx.draw_networkx(G, pos, font_weight='bold', node_color='skyblue', edge_color='steelblue')
@@ -56,25 +56,29 @@ if __name__ == "__main__":
     dijkstra_times = []
     for i in range(10):
         start_time = time.time()
-        dijkstra_p = nx.shortest_path(G, source=src, target=trg, weight='weight', method='dijkstra')
+        for j in other_verts:
+            dijkstra_p = nx.shortest_path(G, source=src, target=j, weight='weight', method='dijkstra')
         delta_time = time.time() - start_time
         dijkstra_times.append(delta_time)
 
     bellman_ford_times = []
     for i in range(10):
         start_time = time.time()
-        bellman_ford_p = nx.shortest_path(G, source=src, target=trg, weight='weight', method='bellman-ford')
+        for j in other_verts:
+            bellman_ford_p = nx.shortest_path(G, source=src, target=j, weight='weight', method='bellman-ford')
         delta_time = time.time() - start_time
         bellman_ford_times.append(delta_time)
         
-    print(f"Source: {src}    Target: {trg}")
-    print(f"Dijkstra: {dijkstra_p}    Time: {np.mean(dijkstra_times)}s")
-    print(f"Bellman-Ford: {bellman_ford_p}    Time: {np.mean(bellman_ford_times)}s")
+    print(f"Source:            {src}")
+    print("Dijkstra time:     {:.4f}s".format(np.mean(dijkstra_times)))
+    print("Bellman-Ford time: {:.4f}s".format(np.mean(bellman_ford_times)))
 
-    path_edges = path_vert2edge(dijkstra_p)
+    #visualize one path
+    dijkstra_vis = nx.shortest_path(G, source=src, target=trg, weight='weight', method='dijkstra')
+    path_edges = path_vert2edge(dijkstra_vis)
     nx.draw_networkx_edges(G, pos, edgelist=path_edges, edge_color='firebrick', width=1.5)
 
     costs = [int(G[e[0]][e[1]]['weight']) for e in path_edges]
-    print(f"Path costs: {costs}    Sum: {sum(costs)}")
+    print(f"\nVisualized path\nPath: {dijkstra_vis}    Path costs: {costs}    Sum: {sum(costs)}")
 
     plt.show()
