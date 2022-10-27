@@ -1,4 +1,5 @@
 import numpy as np
+import random
 import matplotlib.pyplot as plt
 from scipy.optimize import minimize, approx_fprime, least_squares
 
@@ -35,13 +36,12 @@ def rational_grad(ab):
 epsilon = 0.001
 inf = float("inf")
 
-np.random.seed(0) #Fix random parameters to reproduce results on different machines
-
 alpha = np.random.rand(1)
 beta = np.random.rand(1)
+
 x_data = np.linspace(0, 1, 101, endpoint=True)
+
 delta = np.random.normal(size=101)
-y_data = line(x_data, alpha, beta) + delta
 guess = [0.5, 0.5]
 
 
@@ -69,15 +69,18 @@ def gradient_descent(gradient, start=guess, learn_rate=0.001, max_iter=10000, to
 
 if __name__ == "__main__":
     #Uncomment the line below for linear approximant
-    func, grad = line, line_grad
+    #func, grad = line, line_grad
 
     #Uncomment the line below for rational approximant
-    #func, grad = rational, rational_grad
+    func, grad = rational, rational_grad
+
+    y_data = func(x_data, alpha, beta) + delta
 
     x = x_data
     y = y_data
-    plt.scatter(x, y, color="royalblue", label="noisy data", marker=".")
+    plt.plot(x, y, color="royalblue", label="noisy data")
     plt.plot(x, func(x, alpha, beta), color="maroon", label="Initial line")
+    #print(func.__doc__)
     print("Alpha: {}    Beta: {}".format(alpha, beta))
     
     #Gradient Descent
