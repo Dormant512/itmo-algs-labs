@@ -1,121 +1,111 @@
-import pandas as pd
-import numpy as np
 import math
+import random
 import matplotlib.pyplot as plt
+import numpy as np
 
-cities=pd.read_table('coords.txt',sep='\t',header=None)
-cities.columns=['x']
-cities['y']=None
-np.random.seed(2) #Fix random parameters to reproduce results on different machines
+class SimAnneal(object):
+    def __init__(self, coords, T=-1, alpha=-1, stopping_T=-1, stopping_iter=-1):
+        self.coords = coords
+        self.N = len(coords)
+        self.T = math.sqrt(self.N) if T == -1 else T
+        self.T_save = self.T  # save inital T to reset if batch annealing is used
+        self.alpha = 0.995 if alpha == -1 else alpha
+        self.stopping_temperature = 1e-8 if stopping_T == -1 else stopping_T
+        self.stopping_iter = 100000 if stopping_iter == -1 else stopping_iter
+        self.iteration = 1
+        self.nodes = [i for i in range(self.N)]
+        self.best_solution = None
+        self.best_fitness = float("Inf")
+        self.fitness_list = []
 
-#distance calculation between coordinates
-def CalDistance(x, y):
-    return math.sqrt(x**2 + y**2)
+    def initial_solution(self):
+        cur_node = random.choice(self.nodes)
+        solution = [cur_node]
+        free_nodes = set(self.nodes)
+        free_nodes.remove(cur_node)
+        while free_nodes:
+            next_node = min(free_nodes, key=lambda x: self.dist(cur_node, x))  # nearest neighbour
+            free_nodes.remove(next_node)
+            solution.append(next_node)
+            cur_node = next_node
+        cur_fit = self.fitness(solution)
+        if cur_fit < self.best_fitness:
+            self.best_fitness = cur_fit
+            self.best_solution = solution
+        self.fitness_list.append(cur_fit)
+        return solution, cur_fit
 
-def CalLength(cities, paths, start, end):
-    length=0
-    n=1
-    for i in range(len(paths)):
-        if i==0:
-            length += CalDistance(start[0] - cities['x'][paths[i]], start[1] - cities['y'][paths[i]])
-            n=n+1
-        elif n < len(paths):
-            length = length + CalDistance(cities['x'][paths[i]] - cities['x'][paths[i+1]], cities['y'][paths[i]] - cities['y'][paths[i+1]])
-            n=n+1
+    def dist(self, node_0, node_1):
+        coord_0, coord_1 = self.coords[node_0], self.coords[node_1]
+        return math.sqrt((coord_0[0] - coord_1[0]) ** 2 + (coord_0[1] - coord_1[1]) ** 2)
+
+    def fitness(self, solution):
+        cur_fit = 0
+        for i in range(self.N):
+            cur_fit += self.dist(solution[i % self.N], solution[(i + 1) % self.N])
+        return cur_fit
+
+    def p_accept(self, candidate_fitness):
+        return math.exp(-abs(candidate_fitness - self.cur_fitness) / self.T)
+
+    def accept(self, candidate):
+        candidate_fitness = self.fitness(candidate)
+        if candidate_fitness < self.cur_fitness:
+            self.cur_fitness, self.cur_solution = candidate_fitness, candidate
+            if candidate_fitness < self.best_fitness:
+                self.best_fitness, self.best_solution = candidate_fitness, candidate
         else:
-            length = length + CalDistance(cities['x'][paths[i]] - end[0], cities['y'][paths[i]] - end[1])
-    return length
+            if random.random() < self.p_accept(candidate_fitness):
+                self.cur_fitness, self.cur_solution = candidate_fitness, candidate
+
+    def anneal(self):
+        self.cur_solution, self.cur_fitness = self.initial_solution()
+        while self.T >= self.stopping_temperature and self.iteration < self.stopping_iter:
+            candidate = list(self.cur_solution)
+            l = random.randint(2, self.N - 1)
+            i = random.randint(0, self.N - l)
+            candidate[i : (i + l)] = reversed(candidate[i : (i + l)])
+            self.accept(candidate)
+            self.T *= self.alpha
+            self.iteration += 1
+
+            self.fitness_list.append(self.cur_fitness)
+        print("Path length: ", self.best_fitness)
+
+    def visualize_routes(self):
+        plotTSP([self.best_solution], self.coords)
 
 
-for i in range(len(cities)):
-    coordinate=cities['x'][i].split()
-    cities['x'][i]=float(coordinate[0])
-    cities['y'][i]=float(coordinate[1])
+def plotTSP(paths, points):
+    x = []; y = []
+    for i in paths[0]:
+        x.append(points[i][0])
+        y.append(points[i][1])
+    plt.plot(x, y, 'co')
 
-start=list(cities.iloc[0])
-end=list(cities.iloc[0])
-cities=cities.drop([0])
-cities.index=[i for i in range(len(cities))]
 
-#initiate path
-paths=[i for i in range(len(cities))]
+    a_scale = float(max(x))/float(100)
 
-distance_1=0
-distance_2=0
-dif=0
+    plt.arrow(x[-1], y[-1], (x[0] - x[-1]), (y[0] - y[-1]), head_width = a_scale, color ='g', length_includes_head=True)
+    for i in range(0,len(x)-1):
+        plt.arrow(x[i], y[i], (x[i+1] - x[i]), (y[i+1] - y[i]), head_width = a_scale, color = 'g', length_includes_head = True)
+    plt.xlim(min(x)*1.1, max(x)*1.1)
+    plt.ylim(min(y)*1.1, max(y)*1.1)
+    plt.show()
+        
+def read_coords(path):
+    coords = []
+    with open(path, "r") as f:
+        for line in f.readlines():
+            line = [float(x.replace("\n", "")) for x in line.split(" ")]
+            coords.append(line)
+    return coords
 
-for i in range(10):  
-    newPaths_1 = list(np.random.permutation(paths))
-    newPaths_2 = list(np.random.permutation(paths))
-    distance_1 = CalLength(cities,newPaths_1,start,end)
-    distance_2 = CalLength(cities,newPaths_2,start,end)
-    dif_new = abs(distance_1-distance_2)
-    if dif_new >= dif:
-        dif = dif_new
-
-#initiate accept possibility
-Pr=0.5 
-
-#initiate terperature
-temp_0=dif/Pr
-temp=temp_0
-temp_min=temp/50
-
-#iterations of internal circulation
-k=10*len(paths) 
-
-initialPath=paths.copy()
-length=CalLength(cities,initialPath,start,end)
-print("Path length on the first iteration:", length)
-
-cities['order']=initialPath
-cities_order=cities.sort_values(by=['order'])
-plt.plot(cities_order['x'], cities_order['y'], 'bo', label="Coordinates") 
-plt.show() 
-plt.plot(cities_order['x'], cities_order['y'], 'bo', label="Coordinates")   
-plt.plot(cities_order['x'],cities_order['y'], ls='--', label="First iteration")    
-plt.show()   
- 
-#iteration`s counter 
-counter=0 
-initial_Path=list(np.random.permutation(paths))
-length=CalLength(cities,initial_Path, start, end)
-optimal_Path = initial_Path.copy()
-optimal_Length=length
-while temp>temp_min:
-    for i in range(k):
-        new_Paths=optimal_Path.copy()
-        for j in range(int(temp_0/500)):
-            a=0
-            b=0
-            while a==b:
-                a=np.random.randint(0,len(paths))
-                b=np.random.randint(0,len(paths))
-            te=new_Paths[a]
-            new_Paths[a]=new_Paths[b]
-            new_Paths[b]=te
-        new_Length=CalLength(cities, new_Paths, start, end)
-        if new_Length<optimal_Length:
-            optimal_Length=new_Length
-            optimal_Path=new_Paths
-        else:
-             p=math.exp(-(new_Length-optimal_Length)/temp)
-             r=np.random.uniform(low=0,high=1)
-             if r<p:
-                 optimal_Length=new_Length
-                 optimal_Path=new_Paths
-    back=np.random.uniform(low=0,high=1)
-    if back>=0.85:
-        temp=temp*2
-    counter+=1 
-    temp=temp_0/(1+counter)
-    
-print("Optimal path length:", optimal_Length)
-
-#data update for optimal path plot
-cities['order']=initial_Path
-cities_order=cities.sort_values(by=['order'])
-
-plt.plot(cities_order['x'], cities_order['y'], 'bo', label="Coordinates") 
-plt.plot(cities_order['x'], cities_order['y'], ls='--', label="Last iteration")        
-plt.show()    
+if __name__ == "__main__":
+    coords = read_coords("coord.txt")
+    sa = SimAnneal(coords, stopping_iter=0)
+    sa.anneal()
+    sa.visualize_routes() 
+    sa = SimAnneal(coords, stopping_iter=10000)
+    sa.anneal()
+    sa.visualize_routes() 
