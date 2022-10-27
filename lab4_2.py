@@ -8,7 +8,7 @@ class SimAnneal(object):
         self.coords = coords
         self.N = len(coords)
         self.T = math.sqrt(self.N) if T == -1 else T
-        self.T_save = self.T  # save inital T to reset if batch annealing is used
+        self.T_save = self.T
         self.alpha = 0.995 if alpha == -1 else alpha
         self.stopping_temperature = 1e-8 if stopping_T == -1 else stopping_T
         self.stopping_iter = 100000 if stopping_iter == -1 else stopping_iter
