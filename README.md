@@ -1,2 +1,2 @@
-# itmo_lab_listings
-ITMO University listings for labs.
+# itmo-algs-labs
+ITMO University lab listings for the discipline "Algorithm Design".
